@@ -1,0 +1,6 @@
+{
+  "name": "CensusMitra AI - Digital Census 2027",
+  "description": "Official Intelligent Assistant for India's Digital Census 2027: Multilingual digital self-enumeration, verified schedules, privacy assurance, and demographic visualizer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
