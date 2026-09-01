@@ -21,43 +21,39 @@ export function getGenAIClient(): GoogleGenAI | null {
   return aiClient;
 }
 
-export const CENSUS_SYSTEM_INSTRUCTION = `You are "CensusMitra AI (जनगणना मित्र)", the official intelligent assistant for India's Digital Census 2027, under the Office of the Registrar General & Census Commissioner, Ministry of Home Affairs, Government of India.
+export const CENSUS_SYSTEM_INSTRUCTION = `You are "CensusMitra AI (जनगणना मित्र)", the advanced intelligent copilot for India's Digital Census 2027 and comprehensive civic, demographic, and general knowledge assistant.
 
-Your core mission:
-1. Guide citizens of India through digital self-enumeration with empathy, clarity, and precision.
-2. Provide verified census schedules, official notification statuses, and district timelines for Phase 1 (Houselisting & Housing Census) and Phase 2 (Population Enumeration).
-3. Reassure citizens regarding data confidentiality under Section 15 of the Census Act, 1948 (End-to-End Encryption, data immunity in courts, no linkage with NRC/citizenship cancellation/bank accounts).
-4. Actively identify and debunk false rumors, WhatsApp misinformation, and scams.
-5. Multilingual Communication: ALWAYS detect the user's input language (Hindi, Marathi, Bengali, Tamil, Telugu, Gujarati, Kannada, Malayalam, Punjabi, Odia, Assamese, Urdu, English, etc.) and respond natively in that exact language with a warm, respectful, civic, and authoritative tone.
-
-REQUIRED OUTPUT STRUCTURE:
-When responding, always follow this structure:
-1. **Direct Explanation / Guidance:** Plain text localized in the user's detected language. Warm, clear, respectful civic tone.
-2. **Actionable Steps:** Use bullet points starting with - for easy citizen execution (e.g. step 1, step 2, required documents, verification checklist).
-3. **Data/Chart JSON Block (Mandatory when queried about demographics, statistics, state schedules, gender ratio, literacy, or comparative data):**
-Enclose a valid JSON block inside triple backticks with json tag:
+Your Core Capabilities & Principles:
+1. UNIVERSAL QUESTION ANSWERING: You can answer ANY question the user asks—whether about India's Digital Census 2027, historical censuses (1872 to 2011), demographics, state/UT schedules, household amenities, legal rights (Census Act 1948), privacy & DPDP compliance, caste/SECC, migration, language, religion, gender, housing, technology, mobile app navigation, as well as general knowledge, civics, geography, statistics, science, or general inquiries.
+2. NO RESTRICTIONS ON QUESTION TYPES: Never restrict yourself to "fixed questions". Answer whatever the user asks with deep accuracy, rich detail, and helpfulness.
+3. MULTILINGUAL & SCRIPT AGNOSTIC: Respond fluently in whatever language or script the user writes in (Hindi, Marathi, Bengali, Tamil, Telugu, Gujarati, Kannada, Malayalam, Punjabi, Odia, Assamese, Urdu, Hinglish, English, etc.).
+4. CLEAR STRUCTURE & CIVIC TONE:
+   - Direct, clear, authoritative yet warm and empathetic explanation.
+   - Provide concrete, numbered or bulleted actionable steps where helpful.
+   - When discussing data, comparisons, state rankings, timelines, or statistics, include an interactive chart JSON block formatted as:
 \`\`\`json
 {
   "chartType": "bar" | "pie" | "line" | "doughnut",
-  "title": "Clear English / Localized Title",
-  "description": "Short 1-line description of the metric",
+  "title": "Descriptive Chart Title",
+  "description": "Short explanation of the chart metric",
   "labels": ["Label 1", "Label 2", "Label 3"],
   "datasets": [
     {
       "label": "Metric Name",
-      "data": [45, 78, 92],
+      "data": [10, 20, 30],
       "backgroundColor": ["#0284c7", "#059669", "#d97706"]
     }
   ]
 }
 \`\`\`
 
-CENSUS SCHEDULE & FACTUAL GROUNDING:
-- Phase 1 (Houselisting & Housing Census): April 2026 – June 2026 (State-specific 45-day window). Covers building material, ownership, drinking water, electricity, toilet, drainage, LPG, TV/internet/vehicle/banking access.
-- Phase 2 (Population Enumeration): 9th to 28th February 2027 across most states (Revision round: 1st-5th March 2027). In snow-bound areas (J&K, Ladakh, Himachal, Uttarakhand), enumeration takes place in September 2026. Covers age, gender, marital status, religion/social category, mother tongue, literacy, occupation, migration, and disability.
-- Self-Enumeration facility is open 15-30 days prior to enumerator home visits through the official Census 2027 portal/app.
-- Helpline: Toll-free National Census Helpline 1800-11-2027.
-- Always provide clear, fact-checked reassurance when citizens express doubts about privacy or government misuse.`;
+5. CENSUS 2027 KNOWLEDGE REPOSITORY:
+   - Phase 1 (Houselisting & Housing Census): April to June 2026 (45-day active window per state/UT). 31 questions on housing construction, floor/wall/roof material, ownership, drinking water source, lighting, toilet type, drainage, kitchen/LPG, TV/radio, internet, vehicle (bicycle/scooter/car), and access to banking.
+   - Phase 2 (Population Enumeration): February 9 to 28, 2027 (Revision round: March 1-5, 2027). In snow-bound areas (J&K, Ladakh, Himachal, Uttarakhand), September 2026. 28 questions on individual demographics, relationship to head, age, gender, marital status, SC/ST social category, mother tongue, other known languages, literacy & education level, economic activity/occupation, migration reason & duration, disability, and fertility.
+   - Digital Self-Enumeration: Open 15-30 days prior to enumerator visits via Census Portal & Mobile App. Produces a 12-digit Census Reference ID and QR Code for instant 30-second enumerator validation.
+   - Privacy Law & Legal Shield: Section 15 of Census Act 1948 guarantees 100% individual confidentiality. Census records cannot be used as evidence in courts, cannot be shared with Income Tax, Police, or UIDAI, and are separate from NRC/voter lists.
+   - Toll-Free National Helpline: 1800-11-2027.
+   - Special Cases: Tenants/Renters are counted where they normally reside; Students/Hostelers counted at place of study; Migrants counted at usual place of residence (6+ months); Homeless persons enumerated on the night of February 28; NRIs/Foreigners staying 6+ months counted.`;
 
 export interface ChatResponsePayload {
   replyText: string;
@@ -71,37 +67,56 @@ export async function processCensusChat(userMessage: string, history: Array<{ ro
   const ai = getGenAIClient();
 
   if (ai) {
-    try {
-      // Build conversation contents
-      const contents = [];
-      for (const h of history.slice(-6)) {
-        contents.push({
-          role: h.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: h.text }],
-        });
-      }
+    // Build conversation contents
+    const contents = [];
+    for (const h of history.slice(-6)) {
       contents.push({
-        role: 'user',
-        parts: [{ text: userMessage }],
+        role: h.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: h.text }],
       });
+    }
+    contents.push({
+      role: 'user',
+      parts: [{ text: userMessage }],
+    });
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.7-flash',
-        contents: contents,
-        config: {
-          systemInstruction: CENSUS_SYSTEM_INSTRUCTION,
-          temperature: 0.7,
-        },
-      });
+    // Try primary model, then fallback model with quick backoff retry for transient 503 spikes
+    const candidateModels = ['gemini-3.7-flash', 'gemini-3.1-flash-lite'];
 
-      const rawText = response.text || '';
-      return parseModelResponse(rawText, userMessage);
-    } catch (err: any) {
-      console.warn('Gemini API call failed, falling back to civic knowledge engine:', err.message);
+    for (const modelName of candidateModels) {
+      let attempts = 0;
+      while (attempts < 2) {
+        try {
+          const response = await ai.models.generateContent({
+            model: modelName,
+            contents: contents,
+            config: {
+              systemInstruction: CENSUS_SYSTEM_INSTRUCTION,
+              temperature: 0.7,
+            },
+          });
+
+          const rawText = response.text || '';
+          if (rawText.trim()) {
+            return parseModelResponse(rawText, userMessage);
+          }
+          break;
+        } catch (err: any) {
+          attempts++;
+          const is503OrUnavailable = err?.message?.includes('503') || err?.message?.includes('high demand') || err?.status === 'UNAVAILABLE' || err?.code === 503;
+          if (is503OrUnavailable && attempts < 2) {
+            // Brief backoff before retry or switching model
+            await new Promise((res) => setTimeout(res, 600));
+            continue;
+          }
+          console.warn(`Model ${modelName} call failed (attempt ${attempts}):`, err?.message || err);
+          break; // move to candidate fallback model
+        }
+      }
     }
   }
 
-  // Fallback civic engine if API key is not yet set or during offline testing
+  // Fallback civic engine if API key is not yet set or during upstream capacity spikes
   return generateCivicFallbackResponse(userMessage);
 }
 
@@ -178,173 +193,249 @@ function generateDynamicSuggestions(input: string): string[] {
 function generateCivicFallbackResponse(userMessage: string): ChatResponsePayload {
   const lower = userMessage.toLowerCase();
 
-  // Hindi queries
-  if (/[\u0900-\u097F]/.test(userMessage)) {
-    if (lower.includes('शेड्यूल') || lower.includes('तारीख') || lower.includes('कब')) {
-      return {
-        replyText: `नमस्ते! भारत की डिजिटल जनगणना 2027 दो प्रमुख चरणों में आयोजित की जा रही है:
+  // 1. State/UT Specific Schedules Lookups
+  const matchedState = ALL_STATES_SCHEDULES.find(s => 
+    lower.includes(s.stateName.toLowerCase()) || 
+    lower.includes(s.id.toLowerCase()) ||
+    (s.stateNameHi && userMessage.includes(s.stateNameHi))
+  );
 
-**चरण 1 (मकान सूचीकरण और आवास गणना):**
-अप्रैल 2026 से जून 2026 के बीच (प्रत्येक राज्य के लिए 45 दिनों की अवधि)। इसमें घर की स्थिति, पीने का पानी, बिजली, शौचालय और एलपीजी जैसी सुविधाओं की गणना होगी।
-
-**चरण 2 (जनसंख्या गणना):**
-9 फरवरी से 28 फरवरी 2027 (संशोधन दौर 1-5 मार्च 2027)। इसमें प्रत्येक नागरिक की आयु, लिंग, शिक्षा, व्यवसाय और मातृभाषा दर्ज की जाएगी।
-
-**नागरिकों के लिए आवश्यक कदम:**
-- स्व-गणना पोर्टल खुलने पर अपने मोबाइल नंबर से लॉगिन करें।
-- परिवार के मुखिया और सभी सदस्यों का विवरण दर्ज करें।
-- संदर्भ संख्या (Reference Slip) सुरक्षित रखें।`,
-        actionSteps: [
-          'अपने राज्य का आधिकारिक गजट शेड्यूल चेक करें',
-          'मकान सूचीकरण हेतु बुनियादी जानकारी तैयार रखें',
-          'डिजिटल स्व-गणना संदर्भ पर्ची संभाल कर रखें',
-          'किसी भी संदेह पर 1800-11-2027 पर संपर्क करें'
-        ],
-        chartData: {
-          chartType: 'bar',
-          title: 'जनगणना 2027 मुख्य चरण समय-सारणी',
-          description: 'चरण 1 और चरण 2 के समय अंतराल (महीने)',
-          labels: ['चरण 1: मकान सूचीकरण', 'चरण 1: स्व-गणना विंडो', 'चरण 2: जनसंख्या गणना', 'चरण 2: संशोधन दौर'],
-          datasets: [
-            {
-              label: 'अवधि (दिन)',
-              data: [45, 30, 20, 5],
-              backgroundColor: ['#0284c7', '#059669', '#d97706', '#dc2626']
-            }
-          ]
-        },
-        suggestedPrompts: [
-          'क्या मेरी बैंक जानकारी मांगी जाएगी?',
-          'चरण 1 फॉर्म भरने की प्रक्रिया समझाएं',
-          'महाराष्ट्र का शेड्यूल क्या है?'
-        ]
-      };
-    }
-  }
-
-  // Schedule Query
-  if (lower.includes('schedule') || lower.includes('date') || lower.includes('timeline') || lower.includes('when')) {
+  if (matchedState) {
     return {
-      replyText: `Digital Census 2027 is structured into two mandatory nationwide phases under the Registrar General and Census Commissioner of India:
+      replyText: `**Official Digital Census 2027 Schedule for ${matchedState.stateName} (${matchedState.stateNameHi}):**
 
-**Phase 1: Houselisting & Housing Census (April – June 2026)**
-- Focuses on housing structures, amenities (piped water, electricity, sanitation, clean cooking fuel, and household assets).
-- Digital Self-Enumeration window opens 15 days prior to official enumerator field visits.
-
-**Phase 2: Population Enumeration (February 9 to 28, 2027)**
-- Comprehensive enumeration of every resident individual across all 28 States and 8 UTs.
-- Captures demographics, age, gender, literacy, employment sector, mother tongue, and migration details.
-- Revision round: March 1 to 5, 2027.`,
+- **State Code:** ${matchedState.id.toUpperCase()} (${matchedState.type.toUpperCase()}) | **Region:** ${matchedState.region}
+- **Phase 1 (Houselisting & Housing Census):** ${matchedState.phase1Start} to ${matchedState.phase1End}
+- **Phase 1 Self-Enumeration Window:** ${matchedState.selfEnumPhase1Start} to ${matchedState.selfEnumPhase1End}
+- **Phase 2 (Population Enumeration):** ${matchedState.phase2Start} to ${matchedState.phase2End}
+- **Phase 2 Self-Enumeration Window:** ${matchedState.selfEnumPhase2Start} to ${matchedState.selfEnumPhase2End}
+- **Status:** ${matchedState.status} | **Gazette Notification:** ${matchedState.gazetteNotification}
+- **Nodal Officer:** ${matchedState.nodalOfficer}
+- **Directorate Nodal Helpline:** ${matchedState.contactHelpline}`,
       actionSteps: [
-        'Select your state from the Schedule Explorer tab to view exact district dates.',
-        'Use the Digital Self-Enumeration portal during the open window to avoid queueing.',
-        'Obtain and preserve your 12-digit Census Acknowledgment Slip & QR code.',
-        'Show the QR code to the visiting enumerator for instant 30-second verification.'
+        `Complete your digital self-enumeration during ${matchedState.selfEnumPhase1Start} – ${matchedState.selfEnumPhase1End}.`,
+        'Keep your 12-digit Census Reference Code and QR badge ready for verification.',
+        `Contact the State Directorate Nodal Office at ${matchedState.contactHelpline} for local inquiries.`
       ],
       chartData: {
         chartType: 'bar',
-        title: 'Digital Census 2027 Phase Timelines (Days Allocation)',
-        description: 'Duration allocated per phase across States and Union Territories',
-        labels: ['Phase 1 Self-Enum', 'Phase 1 Enumerator', 'Phase 2 Self-Enum', 'Phase 2 Enumeration', 'Revision Round'],
-        datasets: [
-          {
-            label: 'Duration (Days)',
-            data: [30, 45, 25, 20, 5],
-            backgroundColor: ['#0284c7', '#2563eb', '#10b981', '#059669', '#f59e0b']
-          }
-        ]
+        title: `${matchedState.stateName} Census 2027 Allocation`,
+        description: `Timelines for ${matchedState.stateName} across phases`,
+        labels: ['Phase 1 Houselisting', 'Phase 1 Self-Enum', 'Phase 2 Population', 'Phase 2 Self-Enum'],
+        datasets: [{
+          label: 'Days Allocated (Approx)',
+          data: [45, 30, 20, 20],
+          backgroundColor: ['#0284c7', '#059669', '#d97706', '#6366f1']
+        }]
       },
       suggestedPrompts: [
-        'Show schedule for Tamil Nadu and Maharashtra',
-        'Is digital self-enumeration safe from data leaks?',
-        'Show 2027 vs 2011 demographic comparison'
+        `What questions will be asked in ${matchedState.stateName} Phase 1?`,
+        'How to fill the digital self-enumeration form?',
+        'Is bank account or Aadhaar mandatory?'
       ]
     };
   }
 
-  // Privacy and Myth check
-  if (lower.includes('privacy') || lower.includes('bank') || lower.includes('nrc') || lower.includes('citizenship') || lower.includes('tax') || lower.includes('safe') || lower.includes('biometric')) {
+  // 2. Caste / SECC / Social Category Questions
+  if (lower.includes('caste') || lower.includes('secc') || lower.includes('जाति') || lower.includes('sc') || lower.includes('st') || lower.includes('obc') || lower.includes('sub-caste')) {
     return {
-      replyText: `**Official Confidentiality Guarantee under Census Act, 1948:**
+      replyText: `**Policy on Caste & Social Category in Digital Census 2027:**
 
-All information collected in Census 2027 is **100% confidential and protected by law**.
-- **Section 15 Protection:** Individual census answers are completely confidential and are legally barred from being produced as evidence in any court of law or accessed by tax authorities, police, or private entities.
-- **No Citizenship/NRC Linkage:** Census is an administrative statistical survey of residents. It does not cancel citizenship, remove names from voter rolls, or confiscate ration cards.
-- **Zero Financial Queries:** The Census NEVER asks for Bank Account Numbers, UPI PINs, Credit Card Details, OTPs, or PAN cards.
-- **No Biometrics:** No fingerprint or iris scans are gathered during the Census.`,
+- **Scheduled Castes (SC) & Scheduled Tribes (ST):** As per the Constitution (Scheduled Castes) and (Scheduled Tribes) Orders, individual specific SC and ST names notified for each State/UT are officially recorded in Phase 2 (Population Enumeration).
+- **General & Other Categories:** Standard census demographic schedules record Religion, Mother Tongue, and whether the respondent belongs to SC, ST, or Other Categories.
+- **Data Protection:** All social category declarations are strictly protected under Section 15 of the Census Act, 1948 and cannot be used for punitive, administrative, or non-statistical purposes.`,
       actionSteps: [
-        'Never share OTPs or banking passwords with anyone claiming to be a census officer.',
-        'Verify the visiting enumerator’s official photo badge and ORGI QR-coded authorization.',
-        'Report any fraudulent calls or phishing links immediately to 1800-11-2027.',
-        'Self-enumerate securely through our official encrypted portal.'
+        'State your recognized social group as per official state/central gazette listings.',
+        'No physical caste certificate or documentation is demanded by the enumerator at your doorstep.',
+        'Self-enumerate securely to verify all household members accurately.'
       ],
       chartData: {
         chartType: 'doughnut',
-        title: 'Census 2027 Data Security Architecture',
-        description: 'Multi-layer security protocol safeguarding citizen answers',
-        labels: ['Census Act Sec 15 Legal Immunity', '256-bit End-to-End Encryption', 'Anonymized Aggregation Only', 'Zero Biometric/Banking Data'],
-        datasets: [
-          {
-            label: 'Security Distribution',
-            data: [30, 30, 25, 15],
-            backgroundColor: ['#059669', '#0284c7', '#6366f1', '#d97706']
-          }
-        ]
+        title: 'Projected Demographic Social Category Breakdown (National Estimate)',
+        description: 'Estimated broad social categorization distribution',
+        labels: ['General / Other Categories', 'OBC Category', 'Scheduled Castes (SC)', 'Scheduled Tribes (ST)'],
+        datasets: [{
+          label: 'Percentage (%)',
+          data: [28, 43, 19, 10],
+          backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6']
+        }]
       },
       suggestedPrompts: [
-        'How do I complete digital self-enumeration?',
-        'What questions are asked in Phase 1 Houselisting?',
-        'Show literacy and sex ratio projections for 2027'
+        'What questions are asked in Phase 2 Population Enumeration?',
+        'Do I need to submit caste certificate for census?',
+        'Is census data shared with other government departments?'
       ]
     };
   }
 
-  // Demographics and Statistics Query
-  if (lower.includes('stat') || lower.includes('demograph') || lower.includes('literacy') || lower.includes('population') || lower.includes('sex ratio') || lower.includes('chart') || lower.includes('trend')) {
+  // 3. Tenants, Renters, Hostels, Students, Migrants
+  if (lower.includes('tenant') || lower.includes('rent') || lower.includes('hostel') || lower.includes('student') || lower.includes('migrant') || lower.includes('किराएदार') || lower.includes('हॉस्टल') || lower.includes('pg')) {
     return {
-      replyText: `Here is the comprehensive demographic comparison for India's Digital Census 2027 projections compared to Census 2011 benchmarks:
+      replyText: `**Guidelines for Tenants, Students, PG Residents & Migrant Workers:**
 
-- **Projected Population:** 1.458 Billion (vs 1.210 Billion in 2011)
-- **Estimated Overall Literacy:** 82.4% (Male: 88.6%, Female: 77.8% — narrowing the gender gap to 10.8% compared to 16.3% in 2011)
-- **Projected Sex Ratio:** 954 females per 1,000 males (up from 940 in 2011)
-- **Urbanization Rate:** 38.2% (projected 557 Million urban population)
-- **Household Digital Connectivity:** 84.6% of households with internet access (up from 9.2% in 2011)`,
+- **Where are tenants enumerated?** Under Census rules, a person is enumerated at their **usual place of residence** (where they have stayed or intend to stay for 6 months or more). Tenants living in rented flats/houses are counted at their rented residence as an independent household.
+- **What about Landlords?** Landlords will count only the members of their own family living with them. Rented portions are recorded separately as distinct household units.
+- **Students in Hostels / PGs:** Students residing in institutional hostels, university dormitories, or paying guest accommodations are enumerated as part of that institutional household at their place of study.
+- **Migrant Workers:** Seasonal or long-term migrants are counted at the place where they currently reside during the enumeration period.`,
       actionSteps: [
-        'Review the projected age dividend: 65.6% of India’s population is in the prime working age (15-59).',
-        'Explore state-level sex ratio progressions in the Analytics Visualizer.',
-        'Self-enumerate your household members to help update real demographic records.'
+        'If living in a rented house for 6+ months, complete your household self-enumeration at your rented address.',
+        'Do not list tenants under the landlord’s family member list.',
+        'Hostel wardens / PG managers assist enumerators for institutional enumeration.'
       ],
-      chartData: DEMOGRAPHIC_STATS_2027.populationByAgeGroup,
+      chartData: {
+        chartType: 'pie',
+        title: 'Housing Tenancy Distribution in India (Estimated)',
+        description: 'Ownership vs Rented vs Institutional household distribution',
+        labels: ['Owned Households', 'Rented Households', 'Institutional / Other'],
+        datasets: [{
+          label: 'Percentage (%)',
+          data: [78.4, 18.2, 3.4],
+          backgroundColor: ['#0284c7', '#059669', '#f59e0b']
+        }]
+      },
       suggestedPrompts: [
-        'Show literacy trends chart from 1991 to 2027',
-        'Show housing amenities 2011 vs 2027',
-        'Guide me through Phase 1 Self-Enumeration'
+        'How to fill Phase 1 form for a rented flat?',
+        'What if I am traveling during census visits?',
+        'Are foreigners or NRIs counted in the census?'
       ]
     };
   }
 
-  // Default Guidance
+  // 4. Documents & Aadhaar Requirement
+  if (lower.includes('document') || lower.includes('aadhaar') || lower.includes('passport') || lower.includes('proof') || lower.includes('दस्तावेज') || lower.includes('आधार') || lower.includes('voter id')) {
+    return {
+      replyText: `**Official Clarification on Documents & Aadhaar in Census 2027:**
+
+- **NO Original Documents Required:** Citizens are **NOT required** to show or submit physical documents (such as Passports, Birth Certificates, Ration Cards, Property Deeds, or Voter ID cards) to enumerators.
+- **Is Aadhaar Mandatory?** **NO.** Providing Aadhaar is entirely **voluntary**. It can be used purely for quick mobile OTP authentication during digital self-enumeration, but no Aadhaar card copy or biometric is collected.
+- **Verbal Self-Declaration:** In doorstep enumeration, the head of the household or an adult member verbally provides information, which is recorded digitally on the official ORGI mobile app.
+- **Zero Document Seizure:** Enumerators are legally prohibited from collecting paper copies or verifying identity documents.`,
+      actionSteps: [
+        'Do not hand over any identity cards, photocopies, or original documents to anyone.',
+        'Authenticate only via official SMS OTP received directly from "GOI-CENSUS".',
+        'Report any person demanding documents or payment to the national toll-free helpline 1800-11-2027.'
+      ],
+      suggestedPrompts: [
+        'Is digital self-enumeration safe?',
+        'What questions are asked in Phase 1?',
+        'What if someone is not home during enumerator visit?'
+      ]
+    };
+  }
+
+  // 5. Legal Mandate, Penalties & Refusal (Census Act 1948)
+  if (lower.includes('penalty') || lower.includes('fine') || lower.includes('refuse') || lower.includes('mandatory') || lower.includes('law') || lower.includes('act') || lower.includes('कानून') || lower.includes('सजा')) {
+    return {
+      replyText: `**Legal Framework & Provisions under the Census Act, 1948:**
+
+- **Citizen Obligation (Section 10):** Every citizen is legally bound to answer census questions truthfully to the best of their knowledge.
+- **Confidentiality Shield (Section 15):** The law guarantees complete secrecy. Census records are **inadmissible as evidence in any court**, and cannot be accessed by police, tax departments, or private litigation.
+- **Penalties for Refusal / False Answers:** Under Section 11, refusing to answer or intentionally giving fraudulent answers can attract a statutory fine.
+- **Penalties for Enumerator Misconduct:** An enumerator who unlawfully discloses census information, falsifies records, or refuses to perform duty is punishable with imprisonment up to 3 years and a fine.`,
+      actionSteps: [
+        'Answer questions truthfully to support national healthcare, education, and infrastructure planning.',
+        'Know your rights: Your individual answers cannot be accessed under the Right to Information (RTI) Act.',
+        'Use the Digital Self-Enumeration portal for complete convenience.'
+      ],
+      chartData: {
+        chartType: 'bar',
+        title: 'Census Act 1948 Legal Safeguards',
+        description: 'Key provisions balancing civic duties and citizen privacy',
+        labels: ['Sec 10 Truthful Duty', 'Sec 15 Court Immunity', 'Sec 15 No RTI Disclosure', 'Sec 11 Officer Penalty'],
+        datasets: [{
+          label: 'Compliance Index',
+          data: [100, 100, 100, 100],
+          backgroundColor: ['#0284c7', '#059669', '#10b981', '#d97706']
+        }]
+      },
+      suggestedPrompts: [
+        'Is census data shared with income tax authorities?',
+        'How does digital self-enumeration work?',
+        'Show 2027 projected literacy rates'
+      ]
+    };
+  }
+
+  // 6. History & Evolution of Indian Census (1872 - 2027)
+  if (lower.includes('history') || lower.includes('1872') || lower.includes('1951') || lower.includes('first census') || lower.includes('इतिहास') || lower.includes('16th')) {
+    return {
+      replyText: `**History & Evolution of the Census of India:**
+
+- **1872:** The first non-synchronous census of India was conducted under British Viceroy Lord Mayo.
+- **1881:** The first complete and synchronous nationwide census took place under W.C. Plowden (Census Commissioner). Since 1881, the census has been conducted without interruption every 10 years.
+- **1948:** Enactment of the **Census Act, 1948** as permanent legislation.
+- **1951:** First Census of Independent India (7th synchronous census).
+- **2011:** 15th Census of India (Population: 1.21 Billion, Literacy: 74.04%).
+- **2027:** The **16th Census of India** and the **1st Fully Digital Census**, utilizing mobile applications, cloud databases, digital self-enumeration, and QR-coded authentication.`,
+      actionSteps: [
+        'India’s census is the largest administrative and statistical exercise in human history.',
+        'Digital Census 2027 eliminates paper schedules, speeding up data publication by 3 years.',
+        'Explore historical trends in the Analytics visualizer tab.'
+      ],
+      chartData: {
+        chartType: 'line',
+        title: 'India Population Growth (1951 to 2027 Projected in Billions)',
+        description: 'Decadal census counts and 2027 projection',
+        labels: ['1951', '1961', '1971', '1981', '1991', '2001', '2011', '2027 (P)'],
+        datasets: [{
+          label: 'Population (Billions)',
+          data: [0.361, 0.439, 0.548, 0.683, 0.846, 1.028, 1.210, 1.458],
+          backgroundColor: ['#0284c7', '#0284c7', '#0284c7', '#0284c7', '#0284c7', '#0284c7', '#0284c7', '#059669']
+        }]
+      },
+      suggestedPrompts: [
+        'Show literacy trends from 1951 to 2027',
+        'What technology is used in Digital Census 2027?',
+        'How do I complete self-enumeration?'
+      ]
+    };
+  }
+
+  // 7. General Questions / Broad Inquiries
+  if (lower.includes('technology') || lower.includes('app') || lower.includes('software') || lower.includes('qr') || lower.includes('mobile')) {
+    return {
+      replyText: `**Technology Architecture of Digital Census 2027:**
+
+- **Self-Enumeration Web Portal & App:** Accessible on Android, iOS, and Web with multi-factor OTP login and 16 Indian language interfaces.
+- **Enumerator Mobile App (Houselisting & Population Modules):** Works in 100% offline mode with encrypted local SQLite storage, syncing only when an internet connection is available.
+- **Geographic GIS Mapping:** Census Enumeration Blocks (EBs) are mapped using Geo-referenced boundary polygons to avoid duplication or missed households.
+- **Instant QR Verification:** Citizens completing self-enumeration receive an encrypted 12-digit Reference Code and QR badge, allowing enumerators to verify the household in under 30 seconds.`,
+      actionSteps: [
+        'Download the official Census 2027 app only from Google Play Store or Apple App Store.',
+        'Verify that the app publisher is "Office of the Registrar General of India (ORGI)".',
+        'Save your QR code as a PDF or screenshot after completing the form.'
+      ],
+      suggestedPrompts: [
+        'Start Phase 1 Self-Enumeration',
+        'Check schedule for my state',
+        'Is my data safe from cyber threats?'
+      ]
+    };
+  }
+
+  // Fallback default civic guidance
   return {
-    replyText: `Welcome to **CensusMitra AI (जनगणना मित्र)**, your official intelligent assistant for India's Digital Census 2027.
+    replyText: `I am **CensusMitra AI (जनगणना मित्र)**, your 24/7 intelligent assistant for India's Digital Census 2027.
 
-I am here to assist you in English, Hindi (हिन्दी), Marathi (मराठी), Bengali (বাংলা), Tamil (தமிழ்), Telugu (తెలుగు), Gujarati (ગુજરાતી), Kannada (ಕನ್ನಡ), Malayalam (മലയാളം), Punjabi (ਪੰਜਾਬੀ), Odia (ଓଡ଼ିଆ), or Assamese (অসমীয়া).
+I can answer any question about:
+1. **State & District Schedules:** Active dates, Gazette notifications, and district timelines for all 36 States/UTs.
+2. **Self-Enumeration Portal:** Step-by-step guidance for Phase 1 (Housing & Amenities) and Phase 2 (Population Demographics).
+3. **Data Confidentiality & Privacy:** Legal protections under Section 15 Census Act 1948 and Digital Personal Data Protection Act 2023.
+4. **Fact-Checking & Scams:** Real-time debunking of WhatsApp rumors, fake enumerators, and financial phishing.
+5. **Demographic Insights & Charts:** Literacy rates, sex ratios, urban-rural distribution, and decadal trends.
+6. **General Inquiries:** Rules for tenants, students, migrants, caste/SECC, homeless enumeration, and technology.
 
-How may I assist you today?
-- **Digital Self-Enumeration:** Step-by-step guidance for Phase 1 (Housing Amenities) and Phase 2 (Population & Members).
-- **Verified Schedules:** Check exact dates, self-enumeration windows, and nodal helplines for your State/UT.
-- **Privacy & Legal Protections:** Review Section 15 Census Act confidentiality and DPDP compliance.
-- **Anti-Misinformation:** Real-time fact-checking of viral rumors and scams.
-- **Demographic Visualizations:** Interactive statistical charts of projected population, literacy, and amenities.`,
+Feel free to ask me any specific question in English, हिन्दी, मराठी, বাংলা, தமிழ், తెలుగు, ગુજરાતી, ಕನ್ನಡ, മലയാളം, ਪੰਜਾਬੀ, ଓଡ଼ିଆ, or any Indian language!`,
     actionSteps: [
-      'Click "Start Self-Enumeration" to begin your household form.',
-      'Type your question in any Indian language or click the microphone to speak.',
-      'Use the Schedule Explorer to check your district’s active census window.'
+      'Type any question above or click one of the suggested prompts.',
+      'Check your state schedule in the State Schedules explorer tab.',
+      'Start digital self-enumeration in the Self-Enumeration portal tab.'
     ],
     suggestedPrompts: [
-      'Check census schedule for my state',
       'What questions are asked in Phase 1 Housing Census?',
-      'Is my census data shared with income tax or police?',
-      'Show 2027 demographic & literacy charts'
+      'Check census schedule for Maharashtra and Uttar Pradesh',
+      'Are tenants counted at rented flat or hometown?',
+      'Is my bank account or PAN card requested?'
     ]
   };
 }
