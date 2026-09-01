@@ -76,7 +76,7 @@ export interface MythFactItem {
   factHi: string;
   legalBasis: string;
   source: string;
-  category: 'Citizenship' | 'Banking & Tax' | 'Biometrics' | 'Confidentiality' | 'Legal Mandatory';
+  category: 'Citizenship' | 'Banking & Tax' | 'Biometrics' | 'Confidentiality' | 'Legal Mandatory' | 'Documentation' | 'Tenancy & Migration';
 }
 
 export interface HouseholdMember {

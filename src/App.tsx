@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Navbar } from './components/Navbar';
 import { ChatAssistant } from './components/ChatAssistant';
 import { SelfEnumerationPortal } from './components/SelfEnumerationPortal';
@@ -6,6 +6,7 @@ import { ScheduleExplorer } from './components/ScheduleExplorer';
 import { FactCheckShield } from './components/FactCheckShield';
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { ComplianceAuditModal } from './components/ComplianceAuditModal';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { LanguageCode } from './types/census';
 import { ShieldCheck, Lock, PhoneCall, Bot, Sparkles, Terminal } from 'lucide-react';
 
@@ -82,70 +83,72 @@ export default function App() {
 
       {/* Main Content Area */}
       <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-4 py-4" tabIndex={-1}>
-        <div
-          role="tabpanel"
-          id="panel-chat"
-          aria-labelledby="nav-tab-chat"
-          hidden={activeTab !== 'chat'}
-          className={activeTab === 'chat' ? 'block' : 'hidden'}
-        >
-          <ChatAssistant
-            selectedLanguage={selectedLanguage}
-            onNavigateTab={setActiveTab}
-          />
-        </div>
+        <ErrorBoundary>
+          <div
+            role="tabpanel"
+            id="panel-chat"
+            aria-labelledby="nav-tab-chat"
+            hidden={activeTab !== 'chat'}
+            className={activeTab === 'chat' ? 'block' : 'hidden'}
+          >
+            <ChatAssistant
+              selectedLanguage={selectedLanguage}
+              onNavigateTab={setActiveTab}
+            />
+          </div>
 
-        <div
-          role="tabpanel"
-          id="panel-self-enum"
-          aria-labelledby="nav-tab-self-enum"
-          hidden={activeTab !== 'self-enum'}
-          className={activeTab === 'self-enum' ? 'block' : 'hidden'}
-        >
-          <SelfEnumerationPortal
-            selectedLanguage={selectedLanguage}
-            onAskCensusMitra={handleAskCensusMitra}
-          />
-        </div>
+          <div
+            role="tabpanel"
+            id="panel-self-enum"
+            aria-labelledby="nav-tab-self-enum"
+            hidden={activeTab !== 'self-enum'}
+            className={activeTab === 'self-enum' ? 'block' : 'hidden'}
+          >
+            <SelfEnumerationPortal
+              selectedLanguage={selectedLanguage}
+              onAskCensusMitra={handleAskCensusMitra}
+            />
+          </div>
 
-        <div
-          role="tabpanel"
-          id="panel-schedules"
-          aria-labelledby="nav-tab-schedules"
-          hidden={activeTab !== 'schedules'}
-          className={activeTab === 'schedules' ? 'block' : 'hidden'}
-        >
-          <ScheduleExplorer
-            selectedLanguage={selectedLanguage}
-            onAskCensusMitra={handleAskCensusMitra}
-          />
-        </div>
+          <div
+            role="tabpanel"
+            id="panel-schedules"
+            aria-labelledby="nav-tab-schedules"
+            hidden={activeTab !== 'schedules'}
+            className={activeTab === 'schedules' ? 'block' : 'hidden'}
+          >
+            <ScheduleExplorer
+              selectedLanguage={selectedLanguage}
+              onAskCensusMitra={handleAskCensusMitra}
+            />
+          </div>
 
-        <div
-          role="tabpanel"
-          id="panel-fact-check"
-          aria-labelledby="nav-tab-fact-check"
-          hidden={activeTab !== 'fact-check'}
-          className={activeTab === 'fact-check' ? 'block' : 'hidden'}
-        >
-          <FactCheckShield
-            selectedLanguage={selectedLanguage}
-            onAskCensusMitra={handleAskCensusMitra}
-          />
-        </div>
+          <div
+            role="tabpanel"
+            id="panel-fact-check"
+            aria-labelledby="nav-tab-fact-check"
+            hidden={activeTab !== 'fact-check'}
+            className={activeTab === 'fact-check' ? 'block' : 'hidden'}
+          >
+            <FactCheckShield
+              selectedLanguage={selectedLanguage}
+              onAskCensusMitra={handleAskCensusMitra}
+            />
+          </div>
 
-        <div
-          role="tabpanel"
-          id="panel-analytics"
-          aria-labelledby="nav-tab-analytics"
-          hidden={activeTab !== 'analytics'}
-          className={activeTab === 'analytics' ? 'block' : 'hidden'}
-        >
-          <AnalyticsDashboard
-            selectedLanguage={selectedLanguage}
-            onAskCensusMitra={handleAskCensusMitra}
-          />
-        </div>
+          <div
+            role="tabpanel"
+            id="panel-analytics"
+            aria-labelledby="nav-tab-analytics"
+            hidden={activeTab !== 'analytics'}
+            className={activeTab === 'analytics' ? 'block' : 'hidden'}
+          >
+            <AnalyticsDashboard
+              selectedLanguage={selectedLanguage}
+              onAskCensusMitra={handleAskCensusMitra}
+            />
+          </div>
+        </ErrorBoundary>
       </main>
 
       {/* Persistent Civic Footer */}
